@@ -1,79 +1,77 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>서울 전월세 탐험대</title>
 <style>
-:root{font-family:system-ui,-apple-system,"Malgun Gothic",sans-serif;color:#172033;background:#f5f7fb}
-*{box-sizing:border-box}body{margin:0}header{background:#173b68;color:white;padding:32px 18px}
-.wrap{max-width:1100px;margin:auto;padding:0 18px}h1{margin:0 0 8px;font-size:clamp(26px,4vw,38px)}header p{margin:0;color:#dce8f8}
-main{padding:24px 0 50px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px}
-.card{background:white;border:1px solid #e2e8f0;border-radius:14px;padding:18px;box-shadow:0 3px 12px #14233b08}
-.label{color:#64748b;font-size:13px}.number{font-size:27px;font-weight:750;margin-top:6px}
-.controls{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}.controls input,.controls select,.controls button{font:inherit;padding:10px 12px;border:1px solid #cbd5e1;border-radius:9px;background:white}.controls button{background:#173b68;color:white;border-color:#173b68;cursor:pointer;font-weight:650}
-.controls input{flex:1;min-width:190px}.controls button{font:inherit;padding:10px 20px;border:0;border-radius:9px;background:#173b68;color:#fff;font-weight:700;cursor:pointer;min-width:84px}.controls button:hover{background:#24548d}table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid #e8edf4;white-space:nowrap}th{background:#f8fafc;color:#475569;position:sticky;top:0}
-.tablewrap{overflow:auto;max-height:580px}.tag{display:inline-block;border-radius:99px;background:#e7f0ff;color:#17467b;padding:3px 9px;font-size:12px}
-.note{color:#64748b;font-size:13px;line-height:1.6}.status{padding:12px 0;color:#475569}
-@media(max-width:600px){th,td{padding:9px 7px;font-size:12px}.number{font-size:23px}}
-</style>
-</head>
-<body>
-<header><div class="wrap"><h1>🏠 서울 전월세 탐험대</h1><p>서울 연립·다세대 주택의 최근 7일 전세·월세 신고 데이터를 살펴봐요.</p></div></header>
+:root{font-family:system-ui,-apple-system,"Malgun Gothic",sans-serif;color:#172033;background:#f4f7fb}
+*{box-sizing:border-box}body{margin:0}header{background:#173b68;color:white;padding:28px 18px}.wrap{max-width:1100px;margin:auto;padding:0 18px}
+h1{margin:0 0 8px;font-size:clamp(25px,4vw,36px)}header p{margin:0;color:#dce8f8;line-height:1.6}
+main{padding:22px 0 48px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:18px}
+.card{background:white;border:1px solid #e2e8f0;border-radius:14px;padding:16px}.label{color:#64748b;font-size:13px}.number{font-size:25px;font-weight:750;margin-top:7px}
+.panel{background:white;border:1px solid #e2e8f0;border-radius:14px;padding:18px;margin-bottom:16px}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;align-items:end}
+label{display:block;font-size:13px;color:#475569;margin-bottom:6px}select{width:100%;font:inherit;padding:11px 10px;border:1px solid #cbd5e1;border-radius:9px;background:white;color:#172033}
+button{font:inherit;padding:11px 18px;border:0;border-radius:9px;background:#173b68;color:white;font-weight:700;cursor:pointer;width:100%}
+.status{padding:12px 0;color:#475569;line-height:1.6}.tablewrap{overflow:auto;max-height:560px}table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:10px 9px;border-bottom:1px solid #e8edf4;white-space:nowrap}th{background:#f8fafc;color:#475569;position:sticky;top:0}
+.tag{display:inline-block;border-radius:99px;background:#e7f0ff;color:#17467b;padding:3px 9px;font-size:12px}.note{font-size:13px;color:#64748b;line-height:1.7}
+@media(max-width:560px){.panel{padding:13px}th,td{font-size:12px;padding:8px 6px}}
+</style></head><body>
+<header><div class="wrap"><h1>🏠 서울 전월세 탐험대</h1><p>서울의 연립·다세대 주택 전세·월세 신고 자료를 자치구와 동별로 살펴봐요.<br>자료는 최근 1개월 기준이며, 신고 시점에 따라 최신 계약이 아직 포함되지 않을 수 있어요.</p></div></header>
 <main class="wrap">
-  <div class="stats">
-    <div class="card"><div class="label">수집된 계약 수</div><div class="number" id="total">불러오는 중…</div></div>
-    <div class="card"><div class="label">전세 계약</div><div class="number" id="jeonse">-</div></div>
-    <div class="card"><div class="label">월세 계약</div><div class="number" id="monthly">-</div></div>
-    <div class="card"><div class="label">자료 갱신일</div><div class="number" id="updated" style="font-size:20px">-</div></div>
-  </div>
-  <section class="card">
-    <h2 style="margin:0">거래 검색</h2>
-    <div class="controls">
-      <input id="search" placeholder="구·동·건물명 검색"><button id="searchBtn" type="button" style="display:inline-block;background:#173b68;color:#fff;padding:10px 22px;border:0;border-radius:9px;font-weight:700;cursor:pointer">검색</button>
-      <select id="district" aria-label="자치구 선택" style="min-width:145px;display:inline-block">
-        <option value="">모든 자치구</option>
-        <option>강남구</option><option>강동구</option><option>강북구</option><option>강서구</option><option>관악구</option>
-        <option>광진구</option><option>구로구</option><option>금천구</option><option>노원구</option><option>도봉구</option>
-        <option>동대문구</option><option>동작구</option><option>마포구</option><option>서대문구</option><option>서초구</option>
-        <option>성동구</option><option>성북구</option><option>송파구</option><option>양천구</option><option>영등포구</option>
-        <option>용산구</option><option>은평구</option><option>종로구</option><option>중구</option><option>중랑구</option>
-      </select>
-      <select id="kind"><option value="">전세 + 월세</option><option value="전세">전세만</option><option value="월세">월세만</option></select>
-      <select id="sort"><option value="new">최신 계약순</option><option value="deposit">보증금 높은 순</option><option value="area">면적 넓은 순</option></select>
-    </div>
-    <div class="status" id="status">공식 데이터 파일을 확인하고 있어요.</div>
-    <div class="tablewrap"><table><thead><tr><th>계약일</th><th>자치구</th><th>동</th><th>거래</th><th>보증금(만원)</th><th>월세(만원)</th><th>면적(㎡)</th><th>건물명</th></tr></thead><tbody id="rows"></tbody></table></div>
-    <p class="note" id="foot"></p>
-  </section>
-  <p class="note">자료 출처: <a href="https://data.seoul.go.kr/dataList/OA-21276/S/1/datasetView.do" target="_blank" rel="noopener">서울특별시 서울 열린데이터광장 – 서울시 부동산 전월세가 정보</a> (공공누리 제1유형). 금액 단위는 만원이며, 신고 자료는 실제 현재 매물 가격과 다를 수 있습니다.</p>
+<div class="stats">
+<div class="card"><div class="label">수집된 계약 수</div><div class="number" id="total">확인 중…</div></div>
+<div class="card"><div class="label">전세 계약</div><div class="number" id="jeonse">-</div></div>
+<div class="card"><div class="label">월세 계약</div><div class="number" id="monthly">-</div></div>
+<div class="card"><div class="label">자료 갱신일</div><div class="number" id="updated" style="font-size:19px">-</div></div>
+</div>
+<section class="panel"><h2 style="margin:0 0 14px;font-size:19px">거래 조건 선택</h2>
+<div class="filters">
+<div><label for="district">자치구</label><select id="district"><option value="">전체 자치구</option>
+<option>강남구</option><option>강동구</option><option>강북구</option><option>강서구</option><option>관악구</option><option>광진구</option><option>구로구</option><option>금천구</option><option>노원구</option><option>도봉구</option><option>동대문구</option><option>동작구</option><option>마포구</option><option>서대문구</option><option>서초구</option><option>성동구</option><option>성북구</option><option>송파구</option><option>양천구</option><option>영등포구</option><option>용산구</option><option>은평구</option><option>종로구</option><option>중구</option><option>중랑구</option></select></div>
+<div><label for="neighborhood">동 (자치구 선택 후)</label><select id="neighborhood" disabled><option value="">먼저 자치구를 선택하세요</option></select></div>
+<div><label for="kind">계약 유형</label><select id="kind"><option value="">전세 + 월세</option><option value="전세">전세만</option><option value="월세">월세만</option></select></div>
+<div><label for="sort">정렬 기준</label><select id="sort"><option value="new">최신 계약순</option><option value="deposit">보증금 높은 순</option><option value="area">면적 넓은 순</option></select></div>
+<div><button id="apply" type="button">조건 적용</button></div>
+</div><div class="status" id="status">공식 데이터 파일을 확인하고 있어요.</div></section>
+<section class="panel"><div class="tablewrap"><table><thead><tr><th>계약일</th><th>자치구</th><th>동</th><th>유형</th><th>보증금(만원)</th><th>월세(만원)</th><th>면적(㎡)</th><th>건물명</th></tr></thead><tbody id="rows"></tbody></table></div><p class="note" id="foot">자료 출처: <a href="https://data.seoul.go.kr/dataList/OA-21276/S/1/datasetView.do" target="_blank" rel="noopener">서울 열린데이터광장 – 서울시 부동산 전월세가 정보</a>. 금액 단위는 만원이며 신고 자료는 현재 매물 가격과 다를 수 있습니다.</p></section>
 </main>
 <script>
 let all=[];
 const $=id=>document.getElementById(id);
 const num=v=>{const n=Number(String(v??'').replaceAll(',',''));return Number.isFinite(n)?n:0};
 const money=v=>v===''||v==null?'-':Number(v).toLocaleString('ko-KR');
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function updateNeighborhoods(){
+ const district=$('district').value, select=$('neighborhood');
+ select.innerHTML='';
+ const names=[...new Set(all.filter(r=>!district||r.district===district).map(r=>r.neighborhood).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko'));
+ select.add(new Option(district?(names.length?'전체 동':'해당 자치구의 동 자료 없음'):'먼저 자치구를 선택하세요',''));
+ names.forEach(n=>select.add(new Option(n,n)));
+ select.disabled=!district||names.length===0;
+}
 function render(){
- const q=$('search').value.trim().toLowerCase(), d=$('district').value, k=$('kind').value;
- let list=all.filter(r=>(!d||r.district===d)&&(!k||String(r.rent_type).includes(k))&&(!q||[r.district,r.neighborhood,r.building].join(' ').toLowerCase().includes(q)));
+ const d=$('district').value,n=$('neighborhood').value,k=$('kind').value;
+ let list=all.filter(r=>(!d||r.district===d)&&(!n||r.neighborhood===n)&&(!k||String(r.rent_type).includes(k)));
  if($('sort').value==='deposit')list.sort((a,b)=>num(b.deposit_manwon)-num(a.deposit_manwon));
  else if($('sort').value==='area')list.sort((a,b)=>num(b.area_m2)-num(a.area_m2));
- else list.sort((a,b)=>b.contract_date.localeCompare(a.contract_date));
- $('rows').innerHTML=list.slice(0,500).map(r=>'<tr><td>'+r.contract_date+'</td><td>'+esc(r.district)+'</td><td>'+esc(r.neighborhood)+'</td><td><span class="tag">'+esc(r.rent_type)+'</span></td><td>'+money(r.deposit_manwon)+'</td><td>'+money(r.monthly_rent_manwon)+'</td><td>'+money(r.area_m2)+'</td><td>'+esc(r.building||'-')+'</td></tr>').join('');
- $('status').textContent=list.length?list.length.toLocaleString()+'건 검색됨 · 화면에는 최대 500건 표시':'조건에 맞는 계약이 없어요.';
- $('foot').textContent='개인정보 보호와 이용 편의를 위해 검색 결과는 최대 500건까지 화면에 표시합니다.';
+ else list.sort((a,b)=>String(b.contract_date||'').localeCompare(String(a.contract_date||'')));
+ $('rows').innerHTML=list.slice(0,500).map(r=>'<tr><td>'+esc(r.contract_date)+'</td><td>'+esc(r.district)+'</td><td>'+esc(r.neighborhood)+'</td><td><span class="tag">'+esc(r.rent_type)+'</span></td><td>'+money(r.deposit_manwon)+'</td><td>'+money(r.monthly_rent_manwon)+'</td><td>'+money(r.area_m2)+'</td><td>'+esc(r.building||'-')+'</td></tr>').join('');
+ if(!all.length)$('status').textContent='수집된 계약 자료가 0건입니다. 화면 검색 문제가 아니라 데이터 수집을 먼저 점검해야 합니다.';
+ else $('status').textContent=(list.length?list.length.toLocaleString()+'건 검색됨 · 최대 500건 표시':'선택한 조건의 계약이 없습니다.')+' 자료 기간: '+(window.dataPeriod||'-');
 }
-function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-['search','district','kind','sort'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',render));
-$('searchBtn').addEventListener('click',render);
-$('search').addEventListener('keydown',event=>{if(event.key==='Enter')render()});
-fetch('./data.json?v=20261023b').then(r=>{if(!r.ok)throw Error('data.json 파일이 아직 없어요.');return r.json()}).then(data=>{
- all=data.records||[];$('total').textContent=all.length.toLocaleString()+'건';
+$('district').addEventListener('change',()=>{updateNeighborhoods();render()});
+['neighborhood','kind','sort'].forEach(id=>$(id).addEventListener('change',render));
+$('apply').addEventListener('click',render);
+fetch('./data.json?v=20261023c').then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json()}).then(data=>{
+ all=Array.isArray(data.records)?data.records:[];
+ window.dataPeriod=(data.period_from||'?')+' ~ '+(data.period_to||'?');
+ $('total').textContent=all.length.toLocaleString()+'건';
  $('jeonse').textContent=all.filter(r=>String(r.rent_type).includes('전세')).length.toLocaleString()+'건';
  $('monthly').textContent=all.filter(r=>String(r.rent_type).includes('월세')).length.toLocaleString()+'건';
  $('updated').textContent=data.updated_at||'-';
- 
- $('status').textContent=all.length ? ('자료 기간: '+data.period_from+' ~ '+data.period_to) : ('자료 파일은 연결됐지만 '+data.period_from+' ~ '+data.period_to+' 기간의 계약이 0건이에요. 최근 신고 자료가 아직 공개되지 않았을 수 있어요.');render();
-}).catch(err=>{$('total').textContent='자료 준비 중';$('status').textContent='데이터 파일이 아직 생성되지 않았어요. '+err.message;$('foot').textContent='저장소에 SEOUL_API_KEY를 등록하고 데이터 수집 작업을 실행하면 자료가 표시됩니다.'});
-</script>
-</body></html>
+ updateNeighborhoods();
+ $('status').textContent=all.length?'자료 기간: '+window.dataPeriod:'현재 저장된 자료는 0건이에요. 데이터 수집 작업을 확인해야 합니다.';
+ render();
+}).catch(err=>{$('total').textContent='불러오기 실패';$('status').textContent='데이터 파일을 읽지 못했어요 ('+err.message+').';$('foot').textContent='GitHub Actions에서 수집 작업과 Pages 배포 상태를 확인해 주세요.'});
+</script></body></html>
