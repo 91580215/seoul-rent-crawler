@@ -20,7 +20,7 @@ def fetch(url):
 
 def extract_store(html):
     # Current page embeds a JSON-escaped Relay store string.
-    m = re.search(r'window\\.RELAY_STORE\\s*=\\s*"((?:[^"\\\\]|\\\\.)*)"', html)
+    m = re.search(r'window\.RELAY_STORE\s*=\s*"((?:[^"\\]|\\.)*)"', html)
     if m:
         try:
             return json.loads(json.loads('"' + m.group(1) + '"'))
@@ -38,7 +38,7 @@ def extract_store(html):
         ch = html[i]
         if quoted:
             if escaped: escaped = False
-            elif ch == "\\\\": escaped = True
+            elif ch == "\\": escaped = True
             elif ch == '"': quoted = False
         else:
             if ch == '"': quoted = True
