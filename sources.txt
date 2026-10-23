@@ -1,2 +1,7 @@
-# 공개 HTML 매물 목록 페이지 URL을 한 줄에 하나씩 입력하세요.
-# API 주소나 확인되지 않은 주소는 추가하지 않습니다.
+# 공개 HTML 매물 요약 페이지
+# 수집은 공개 HTML 텍스트만 읽으며 매물 API를 호출하지 않습니다.
+https://realty.daangn.com/map/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EB%8F%99%EB%8C%80%EB%AC%B8%EA%B5%AC/%EB%B9%8C%EB%9D%BC/%EC%A4%91%EA%B0%9C
+https://realty.daangn.com/map/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C/%EB%A7%88%ED%8F%AC%EA%B5%AC/%EB%B9%8C%EB%9D%BC/%EC%A4%91%EA%B0%9C
+https://realty.daangn.com/map/%EA%B2%BD%EA%B8%B0%EB%8F%84/%EC%88%98%EC%9B%90%EC%8B%9C%20%ED%8C%94%EB%8B%AC%EA%B5%AC/%EC%9E%A5%EC%95%88%EB%8F%99/%EB%B9%8C%EB%9D%BC
+https://realty.daangn.com/map/%EC%B6%A9%EC%B2%AD%EB%82%A8%EB%8F%84/%EB%8B%B9%EC%A7%84%EC%8B%9C/%EC%86%A1%EC%82%B0%EB%A9%B4/%EB%B9%8C%EB%9D%BC
+https://realty.daangn.com/map/subway/%EC%A2%85%ED%95%A9%EC%9A%B4%EB%8F%99%EC%9E%A5%EC%97%AD
