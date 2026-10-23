@@ -1,142 +1,61 @@
-"""서울시 전월세 공개 API 수집기.
-공식 데이터: 서울 열린데이터광장 OA-21276 (tbLnOpendataRentV)
-GitHub Actions에서 SEOUL_API_KEY 환경변수로 인증키를 전달합니다.
-"""
-import csv
-import json
-import os
-import time
-from urllib.parse import quote
-from datetime import date, timedelta
+"""Public HTML crawler: requests + BeautifulSoup only; no API."""
+import json, re, time
+from datetime import datetime
 from pathlib import Path
-
+from urllib.parse import urljoin
 import requests
+from bs4 import BeautifulSoup
 
-API_KEY = os.getenv("SEOUL_API_KEY", "").strip()
-BASE_URL = "http://openapi.seoul.go.kr:8088"
+START_URL = "https://vacancy.zaritalk.com/region/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C-%EC%A4%91%EA%B5%AC"
 OUTPUT = Path("docs/data.json")
-PAGE_SIZE = 1000
-TARGET_USAGE = "연립다세대"
-HEADERS = {"User-Agent": "SeoulRentScout/1.0 (student data project)"}
-
-
-def get_rows(contract_date: date) -> list[dict]:
-    """계약일 하루치의 연립·다세대 전월세 데이터를 API에서 가져온다."""
-    if not API_KEY:
-        raise RuntimeError(
-            "SEOUL_API_KEY가 설정되지 않았어요. 서울 열린데이터광장에서 인증키를 발급한 뒤 "
-            "GitHub 저장소 Settings > Secrets and variables > Actions에 등록해 주세요."
-        )
-
-    rows: list[dict] = []
-    start = 1
-    total = None
-    while total is None or start <= total:
-        end = start + PAGE_SIZE - 1
-        # 서울시 OpenAPI의 선택 조건은 '필드명=값'이 아니라
-        # API 명세에 정해진 순서대로 값을 URL 경로에 넣는 방식이다.
-        # CTRT_DAY는 11번째, BLDG_USG는 18번째 선택 조건이다.
-        filters = [""] * 10 + [contract_date.strftime("%Y%m%d")] + [""] * 6 + [TARGET_USAGE]
-        filter_path = "/".join(quote(value, safe="") for value in filters)
-        url = f"{BASE_URL}/{API_KEY}/json/tbLnOpendataRentV/{start}/{end}/{filter_path}"
-        response = requests.get(url, headers=HEADERS, timeout=(10, 45))
-        response.raise_for_status()
-        payload = response.json()
-        block = payload.get("tbLnOpendataRentV", {})
-        result = block.get("RESULT", {})
-        if result and result.get("CODE") != "INFO-000":
-            raise RuntimeError(f"서울시 API 오류: {result.get('CODE')} - {result.get('MESSAGE')}")
-        page_rows = block.get("row", [])
-        if not page_rows:
-            break
-        rows.extend(page_rows)
-        total = int(block.get("list_total_count", len(rows)))
-        print(f"{contract_date}: {len(rows):,} / {total:,}건 확인")
-        start += PAGE_SIZE
-        time.sleep(0.1)
-    return rows
-
-def diagnose_api() -> None:
-    """수집 전에 기본 조회와 필터 조회가 각각 작동하는지 확인한다."""
-    probes = [
-        ("기본 조회", f"{BASE_URL}/{API_KEY}/json/tbLnOpendataRentV/1/5/"),
-        ("용도 필터", f"{BASE_URL}/{API_KEY}/json/tbLnOpendataRentV/1/5/{quote('BLDG_USG=연립다세대', safe='=')}"),
-        ("계약일 필터", f"{BASE_URL}/{API_KEY}/json/tbLnOpendataRentV/1/5/{quote('CTRT_DAY='+date.today().strftime('%Y%m%d'), safe='=')}"),
-    ]
-    for label, url in probes:
-        response = requests.get(url, headers=HEADERS, timeout=(10, 45))
-        print(f"진단 {label}: HTTP {response.status_code}")
-        response.raise_for_status()
-        payload = response.json()
-        block = payload.get("tbLnOpendataRentV", {})
-        result = block.get("RESULT", {})
-        print(f"진단 {label}: CODE={result.get('CODE')} MESSAGE={result.get('MESSAGE')} total={block.get('list_total_count')} rows={len(block.get('row', []))}")
-        if label == "기본 조회" and block.get("row"):
-            sample = block["row"][0]
-            print("진단 기본 조회 필드:", ", ".join(sample.keys()))
-            print("진단 첫 행 주요값:", {k: sample.get(k) for k in ("CTRT_DAY", "BLDG_USG", "RENT_SE", "CGG_NM", "STDG_NM")})
-
-def first_value(row: dict, *keys: str) -> str:
-    for key in keys:
-        value = row.get(key)
-        if value not in (None, ""):
-            return str(value).strip()
-    return ""
-
-
-def main() -> None:
-    diagnose_api()
-    today = date.today()
-    cutoff = today - timedelta(days=29)  # 오늘 포함 최근 30일
-    collected: list[dict] = []
-
-    current = cutoff
-    while current <= today:
-        for row in get_rows(current):
-            contract_day = first_value(row, "CTRT_DAY", "계약일")
-            if len(contract_day) != 8 or not contract_day.isdigit():
-                continue
-            try:
-                contract_date = date(int(contract_day[:4]), int(contract_day[4:6]), int(contract_day[6:8]))
-            except ValueError:
-                continue
-            if not (cutoff <= contract_date <= today):
-                continue
-
-            usage = first_value(row, "BLDG_USG", "건물용도")
-            if usage and usage not in ("연립다세대", "연립", "다세대"):
-                continue
-
-            collected.append({
-                "contract_date": contract_date.isoformat(),
-                "district": first_value(row, "CGG_NM", "자치구명"),
-                "neighborhood": first_value(row, "STDG_NM", "법정동명"),
-                "building": first_value(row, "BLDG_NM", "건물명"),
-                "rent_type": first_value(row, "RENT_SE", "전월세구분"),
-                "deposit_manwon": first_value(row, "GRFE", "보증금"),
-                "monthly_rent_manwon": first_value(row, "RTFE", "임대료"),
-                "area_m2": first_value(row, "RENT_AREA", "임대면적"),
-                "building_year": first_value(row, "ARCH_YR", "건축년도"),
-                "floor": first_value(row, "FLR", "층"),
-                "contract_period": first_value(row, "CTRT_PRD", "계약기간"),
-            })
-        current += timedelta(days=1)
-
-    collected.sort(key=lambda item: item["contract_date"], reverse=True)
-    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    document = {
-        "source": "서울특별시 서울 열린데이터광장 OA-21276 (tbLnOpendataRentV)",
-        "source_url": "https://data.seoul.go.kr/dataList/OA-21276/S/1/datasetView.do",
-        "updated_at": today.isoformat(),
-        "period_days": 30,
-        "period_from": cutoff.isoformat(),
-        "period_to": today.isoformat(),
-        "count": len(collected),
-        "records": collected,
-    }
-    OUTPUT.write_text(json.dumps(document, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"완료: {len(collected):,}건 → {OUTPUT}")
-
-
-if __name__ == "__main__":
-    main()
+HEADERS = {"User-Agent":"Mozilla/5.0 (compatible; StudentHousingResearch/1.0)", "Accept-Language":"ko-KR,ko;q=0.9"}
+def clean(s): return re.sub(r"\\s+", " ", s or "").strip()
+def money(s):
+    s=s.replace(",","").strip(); total=0
+    if "억" in s:
+        a,_,s=s.partition("억"); total=int(a or 0)*10000
+    s=s.replace("만","").strip()
+    if s.isdigit(): total+=int(s)
+    return total or None
+def main():
+    response=requests.get(START_URL,headers=HEADERS,timeout=25)
+    print("HTTP",response.status_code,"URL",response.url)
+    response.raise_for_status()
+    if "text/html" not in response.headers.get("Content-Type",""):
+        raise RuntimeError("HTML이 아닌 응답입니다. API로 대체하지 않고 중단합니다.")
+    soup=BeautifulSoup(response.content,"html.parser")
+    page_text=clean(soup.get_text(" ",strip=True))
+    if not any(x in page_text for x in ("매물","전세","월세")):
+        raise RuntimeError("받은 HTML에서 매물 텍스트를 찾지 못했습니다.")
+    records=[]; seen=set()
+    for a in soup.select("a[href]"):
+        title=clean(a.get_text(" ",strip=True))
+        if not title or not any(x in title for x in ("전세","월세")): continue
+        if not any(x in title for x in ("원룸","투룸","빌라","다세대","연립")): continue
+        typ="전세" if "전세" in title else "월세"
+        m=re.search(r"(?:전세|월세)\\s*([0-9,억만]+)(?:\\s*/\\s*([0-9,]+))?",title)
+        if not m: continue
+        dep=money(m.group(1)); mon=money(m.group(2) or "0") if typ=="월세" else 0
+        if dep is None: continue
+        link=urljoin(response.url,a.get("href",""))
+        if link in seen: continue
+        seen.add(link)
+        dong=re.search(r"서울\\s*중구\\s*([^\\s,]+)",title)
+        kind=next((x for x in ("원룸","투룸","빌라","다세대","연립") if x in title),"")
+        area=re.search(r"([0-9]+(?:\\.[0-9]+)?)\\s*평",title)
+        records.append({"sido":"서울특별시","sigungu":"중구","neighborhood":dong.group(1) if dong else "",
+          "rent_type":typ,"housing_type":kind,"deposit_manwon":dep,"monthly_rent_manwon":mon or 0,
+          "area_m2":round(float(area.group(1))*3.3058,1) if area else None,"building":"공개 매물",
+          "listing_title":title[:240],"listing_url":link,"source_url":response.url,
+          "collected_at":datetime.now().astimezone().isoformat(timespec="seconds")})
+    time.sleep(1)
+    if not records:
+        raise RuntimeError("HTML 요청은 됐지만 매물 카드 구조를 추출하지 못했습니다. 가짜 데이터나 API로 대체하지 않았습니다.")
+    OUTPUT.parent.mkdir(parents=True,exist_ok=True)
+    doc={"source":"자리톡 공개 지역별 매물 페이지","source_url":START_URL,
+      "collection_method":"requests + BeautifulSoup HTML 크롤링 (API 미사용)",
+      "updated_at":datetime.now().astimezone().date().isoformat(),"count":len(records),
+      "records":records,"note":"공개 HTML에 노출된 정보만 수집합니다. 게시일이 노출되지 않으면 최신 등록일은 보장할 수 없습니다."}
+    OUTPUT.write_text(json.dumps(doc,ensure_ascii=False,indent=2),encoding="utf-8")
+    print("수집 완료:",len(records),"건")
+if __name__=="__main__": main()
