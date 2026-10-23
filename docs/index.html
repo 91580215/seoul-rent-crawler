@@ -12,7 +12,7 @@ main{padding:24px 0 50px}.stats{display:grid;grid-template-columns:repeat(auto-f
 .card{background:white;border:1px solid #e2e8f0;border-radius:14px;padding:18px;box-shadow:0 3px 12px #14233b08}
 .label{color:#64748b;font-size:13px}.number{font-size:27px;font-weight:750;margin-top:6px}
 .controls{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}.controls input,.controls select,.controls button{font:inherit;padding:10px 12px;border:1px solid #cbd5e1;border-radius:9px;background:white}.controls button{background:#173b68;color:white;border-color:#173b68;cursor:pointer;font-weight:650}
-.controls input{flex:1;min-width:190px}table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid #e8edf4;white-space:nowrap}th{background:#f8fafc;color:#475569;position:sticky;top:0}
+.controls input{flex:1;min-width:190px}.controls button{font:inherit;padding:10px 20px;border:0;border-radius:9px;background:#173b68;color:#fff;font-weight:700;cursor:pointer;min-width:84px}.controls button:hover{background:#24548d}table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid #e8edf4;white-space:nowrap}th{background:#f8fafc;color:#475569;position:sticky;top:0}
 .tablewrap{overflow:auto;max-height:580px}.tag{display:inline-block;border-radius:99px;background:#e7f0ff;color:#17467b;padding:3px 9px;font-size:12px}
 .note{color:#64748b;font-size:13px;line-height:1.6}.status{padding:12px 0;color:#475569}
 @media(max-width:600px){th,td{padding:9px 7px;font-size:12px}.number{font-size:23px}}
@@ -30,7 +30,7 @@ main{padding:24px 0 50px}.stats{display:grid;grid-template-columns:repeat(auto-f
   <section class="card">
     <h2 style="margin:0">거래 검색</h2>
     <div class="controls">
-      <input id="search" placeholder="구·동·건물명 검색"><button id="searchBtn" type="button">검색</button>
+      <input id="search" placeholder="구·동·건물명 검색"><button id="searchBtn" type="button" style="display:inline-block;background:#173b68;color:#fff;padding:10px 22px;border:0;border-radius:9px;font-weight:700;cursor:pointer">검색</button>
       <select id="district"><option value="">모든 자치구</option></select>
       <select id="kind"><option value="">전세 + 월세</option><option value="전세">전세만</option><option value="월세">월세만</option></select>
       <select id="sort"><option value="new">최신 계약순</option><option value="deposit">보증금 높은 순</option><option value="area">면적 넓은 순</option></select>
