@@ -17,24 +17,24 @@ HEADERS = {
     "Accept-Language": "ko-KR,ko;q=0.9,en;q=0.8",
 }
 TYPE_WORDS = ("빌라", "원룸", "주택", "다세대", "연립", "투룸", "오피스텔")
-MONEY = r"(?:\\d+(?:억\\s*)?(?:\\d[\\d, ]*만?)?|\\d[\\d, ]*)"
+MONEY = r"(?:\d+(?:억\s*)?(?:\d[\d, ]*만?)?|\d[\d, ]*)"
 
 def clean(s):
-    return re.sub(r"\\s+", " ", str(s or "")).strip()
+    return re.sub(r"\s+", " ", str(s or "")).strip()
 
 def money_manwon(s):
     s = clean(s).replace(",", "").replace("만원", "만").replace(" ", "")
     if not s:
         return None
     total = 0
-    m = re.search(r"(\\d+)억", s)
+    m = re.search(r"(\d+)억", s)
     if m:
         total += int(m.group(1)) * 10000
-    rest = re.search(r"억(\\d+)만?", s)
+    rest = re.search(r"억(\d+)만?", s)
     if rest:
         total += int(rest.group(1))
     elif not m:
-        m2 = re.search(r"(\\d+)만?", s)
+        m2 = re.search(r"(\d+)만?", s)
         if m2:
             total = int(m2.group(1))
     return total if total or s in ("0", "0만") else None
@@ -45,7 +45,7 @@ def infer_region(title, url):
     sido = next((x for x in provinces if x in combined), "")
     district = ""
     if sido:
-        m = re.search(re.escape(sido) + r"\\s*([^/·]+?(?:구|시|군))", title)
+        m = re.search(re.escape(sido) + r"\s*([^/·]+?(?:구|시|군))", title)
         if m:
             district = clean(m.group(1))
     return sido, district
@@ -60,31 +60,31 @@ def parse_line(line, page_title, source_url, collected_at):
     if "매매" in line and not ("전세" in line or "월세" in line):
         return None
     kind = "전세" if "전세" in line else "월세"
-    area_match = re.search(r"(\\d+(?:\\.\\d+)?)\\s*m²", line)
+    area_match = re.search(r"(\d+(?:\.\d+)?)\s*m²", line)
     area = float(area_match.group(1)) if area_match else None
     # Parse deposit/monthly values from Korean visible summary text.
     deposit = monthly = None
     if kind == "전세":
-        price_match = re.search(r"전세\\s*(" + MONEY + r")\\s*만원?", line)
+        price_match = re.search(r"전세\s*(" + MONEY + r")\s*만원?", line)
         if not price_match:
-            price_match = re.search(r"전세\\s*(\\d+(?:억\\s*\\d[\\d, ]*만?)?)", line)
+            price_match = re.search(r"전세\s*(\d+(?:억\s*\d[\d, ]*만?)?)", line)
         if price_match:
             deposit = money_manwon(price_match.group(1))
     else:
-        price_match = re.search(r"월세\\s*(" + MONEY + r")\\s*/\\s*(" + MONEY + r")\\s*만원?", line)
+        price_match = re.search(r"월세\s*(" + MONEY + r")\s*/\s*(" + MONEY + r")\s*만원?", line)
         if price_match:
             deposit = money_manwon(price_match.group(1))
             monthly = money_manwon(price_match.group(2))
         else:
             # Some pages show "월세 500 / 45만원" with spaces and the first amount in 만원.
-            price_match = re.search(r"월세\\s*([\\d,억만 ]+)\\s*/\\s*([\\d,억만 ]+)", line)
+            price_match = re.search(r"월세\s*([\d,억만 ]+)\s*/\s*([\d,억만 ]+)", line)
             if price_match:
                 deposit = money_manwon(price_match.group(1))
                 monthly = money_manwon(price_match.group(2))
     if deposit is None or (kind == "월세" and monthly is None):
         return None
     sido, sigungu = infer_region(page_title, source_url)
-    dong_match = re.search(r"([가-힣0-9·]+(?:동|읍|면|리))\\s+(?:빌라|원룸|주택|다세대|연립|투룸)", line)
+    dong_match = re.search(r"([가-힣0-9·]+(?:동|읍|면|리))\s+(?:빌라|원룸|주택|다세대|연립|투룸)", line)
     neighborhood = dong_match.group(1) if dong_match else ""
     housing = next((x for x in TYPE_WORDS if x in line), "주택")
     return {
