@@ -19,7 +19,7 @@ main{padding:24px 0 50px}.stats{display:grid;grid-template-columns:repeat(auto-f
 </style>
 </head>
 <body>
-<header><div class="wrap"><h1>🏠 서울 전월세 탐험대</h1><p>서울 연립·다세대 주택의 최근 1년 전세·월세 신고 데이터를 살펴봐요.</p></div></header>
+<header><div class="wrap"><h1>🏠 서울 전월세 탐험대</h1><p>서울 연립·다세대 주택의 최근 7일 전세·월세 신고 데이터를 살펴봐요.</p></div></header>
 <main class="wrap">
   <div class="stats">
     <div class="card"><div class="label">수집된 계약 수</div><div class="number" id="total">불러오는 중…</div></div>
@@ -31,7 +31,14 @@ main{padding:24px 0 50px}.stats{display:grid;grid-template-columns:repeat(auto-f
     <h2 style="margin:0">거래 검색</h2>
     <div class="controls">
       <input id="search" placeholder="구·동·건물명 검색"><button id="searchBtn" type="button" style="display:inline-block;background:#173b68;color:#fff;padding:10px 22px;border:0;border-radius:9px;font-weight:700;cursor:pointer">검색</button>
-      <select id="district"><option value="">모든 자치구</option></select>
+      <select id="district">
+        <option value="">모든 자치구</option>
+        <option>강남구</option><option>강동구</option><option>강북구</option><option>강서구</option><option>관악구</option>
+        <option>광진구</option><option>구로구</option><option>금천구</option><option>노원구</option><option>도봉구</option>
+        <option>동대문구</option><option>동작구</option><option>마포구</option><option>서대문구</option><option>서초구</option>
+        <option>성동구</option><option>성북구</option><option>송파구</option><option>양천구</option><option>영등포구</option>
+        <option>용산구</option><option>은평구</option><option>종로구</option><option>중구</option><option>중랑구</option>
+      </select>
       <select id="kind"><option value="">전세 + 월세</option><option value="전세">전세만</option><option value="월세">월세만</option></select>
       <select id="sort"><option value="new">최신 계약순</option><option value="deposit">보증금 높은 순</option><option value="area">면적 넓은 순</option></select>
     </div>
