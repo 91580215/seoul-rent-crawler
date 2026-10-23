@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>전국 자취방 탐험대</title>
+<title>전월세 계약 데이터 탐험대</title>
 <style>
 :root{font-family:system-ui,-apple-system,"Malgun Gothic",sans-serif;color:#172033;background:#f4f7fb}
 *{box-sizing:border-box}body{margin:0}header{background:linear-gradient(120deg,#173b68,#286b83);color:white;padding:30px 18px}.wrap{max-width:1100px;margin:auto;padding:0 18px}
@@ -18,7 +18,7 @@ button{font:inherit;padding:11px 18px;border:0;border-radius:9px;background:#173
 @media(max-width:560px){.panel{padding:13px}}
 </style></head>
 <body>
-<header><div class="wrap"><h1>🏠 전국 자취방 탐험대</h1><p>지역과 계약 조건을 선택해 전월세 데이터를 찾아보세요.<br>검색 결과는 조건에 맞는 자료 중 대표 5건부터 보여 주고, 더보기를 누르면 나머지도 확인할 수 있어요.</p></div></header>
+<header><div class="wrap"><h1>🏠 전월세 계약 데이터 탐험대</h1><p>지역과 계약 조건을 선택해 공개된 전월세 계약 자료를 살펴보세요.<br>현재 등록 중인 실시간 매물 목록과 신고된 계약 기록은 서로 다른 데이터입니다.</p></div></header>
 <main class="wrap">
 <div class="stats">
  <div class="card"><div class="label">검색 가능한 자료</div><div class="number" id="total">불러오는 중…</div></div>
@@ -43,7 +43,7 @@ button{font:inherit;padding:11px 18px;border:0;border-radius:9px;background:#173
  <div style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap"><h2 style="margin:0;font-size:19px">검색 결과 <span class="tag" id="resultCount">0건</span></h2><span class="note">추천 결과 5건부터 표시</span></div>
  <div id="results" class="results" style="margin-top:14px"></div>
  <div style="margin-top:14px"><button id="more" class="secondary" type="button" hidden>더보기</button></div>
- <p class="note" style="margin-top:18px">데이터 출처: <a href="https://data.seoul.go.kr/dataList/OA-21276/S/1/datasetView.do" target="_blank" rel="noopener">서울 열린데이터광장 – 서울시 부동산 전월세가 정보</a>. 현재 연결된 수집기는 서울의 신고된 전월세 계약 자료를 대상으로 하며, 전국의 현재 등록 매물과는 다릅니다. 전국 실매물 검색은 해당 지역의 데이터 소스 연결 및 검증이 추가로 필요합니다. 금액 단위는 만원입니다.</p>
+ <p class="note" style="margin-top:18px">데이터 출처: <a href="https://data.seoul.go.kr/dataList/OA-21276/S/1/datasetView.do" target="_blank" rel="noopener">서울 열린데이터광장 – 서울시 부동산 전월세가 정보</a>. <strong>중요:</strong> 이 자료는 서울의 신고된 전월세 계약 기록이며, 현재 등록 중인 매물의 실시간 목록이 아닙니다. 네이버·직방 등 민간 사이트의 현재 매물 크롤링은 접근 제한 및 자동 수집 정책 때문에 아직 연결·검증되지 않았습니다. 지역 선택 메뉴는 탐색용이며, 실제 자료가 존재하는 지역만 결과가 표시됩니다. 금액 단위는 만원입니다.</p>
 </section>
 </main>
 <script>
