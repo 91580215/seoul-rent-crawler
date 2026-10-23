@@ -96,6 +96,7 @@ def main() -> None:
                 "floor": first_value(row, "FLR", "층"),
                 "contract_period": first_value(row, "CTRT_PRD", "계약기간"),
             })
+        current += timedelta(days=1)
 
     collected.sort(key=lambda item: item["contract_date"], reverse=True)
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
