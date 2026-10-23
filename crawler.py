@@ -33,9 +33,12 @@ def get_rows(contract_date: date) -> list[dict]:
     total = None
     while total is None or start <= total:
         end = start + PAGE_SIZE - 1
-        date_filter = quote(f"CTRT_DAY={contract_date.strftime('%Y%m%d')}", safe="=")
-        usage_filter = quote(f"BLDG_USG={TARGET_USAGE}", safe="=")
-        url = f"{BASE_URL}/{API_KEY}/json/tbLnOpendataRentV/{start}/{end}/{date_filter}/{usage_filter}"
+        # 서울시 OpenAPI의 선택 조건은 '필드명=값'이 아니라
+        # API 명세에 정해진 순서대로 값을 URL 경로에 넣는 방식이다.
+        # CTRT_DAY는 11번째, BLDG_USG는 18번째 선택 조건이다.
+        filters = [""] * 10 + [contract_date.strftime("%Y%m%d")] + [""] * 6 + [TARGET_USAGE]
+        filter_path = "/".join(quote(value, safe="") for value in filters)
+        url = f"{BASE_URL}/{API_KEY}/json/tbLnOpendataRentV/{start}/{end}/{filter_path}"
         response = requests.get(url, headers=HEADERS, timeout=(10, 45))
         response.raise_for_status()
         payload = response.json()
