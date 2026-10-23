@@ -1,4 +1,6 @@
-"""Public HTML crawler: requests + BeautifulSoup only; no API."""
+"""Public HTML crawler using requests + BeautifulSoup only. No APIs or access-control bypass.
+Put verified public listing-page URLs, one per line, in sources.txt.
+"""
 import json, re, time
 from datetime import datetime
 from pathlib import Path
@@ -6,56 +8,120 @@ from urllib.parse import urljoin
 import requests
 from bs4 import BeautifulSoup
 
-START_URL = "https://vacancy.zaritalk.com/region/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C-%EC%A4%91%EA%B5%AC"
-OUTPUT = Path("docs/data.json")
-HEADERS = {"User-Agent":"Mozilla/5.0 (compatible; StudentHousingResearch/1.0)", "Accept-Language":"ko-KR,ko;q=0.9"}
-def clean(s): return re.sub(r"\\s+", " ", s or "").strip()
-def money(s):
-    s=s.replace(",","").strip(); total=0
-    if "억" in s:
-        a,_,s=s.partition("억"); total=int(a or 0)*10000
-    s=s.replace("만","").strip()
-    if s.isdigit(): total+=int(s)
-    return total or None
+ROOT = Path(__file__).resolve().parent
+SOURCES = ROOT / "sources.txt"
+OUTPUT = ROOT / "docs" / "data.json"
+HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; StudentHousingResearch/1.0)", "Accept-Language": "ko-KR,ko;q=0.9"}
+REGIONS = ["서울특별시","부산광역시","대구광역시","인천광역시","광주광역시","대전광역시","울산광역시","세종특별자치시","경기도","강원특별자치도","충청북도","충청남도","전북특별자치도","전라남도","경상북도","경상남도","제주특별자치도"]
+
+def clean(value):
+    return re.sub(r"\\s+", " ", value or "").strip()
+
+def amount_manwon(raw):
+    raw = (raw or "").replace(",", "").replace(" ", "").replace("만원", "").replace("원", "")
+    if not raw:
+        return None
+    total = 0
+    if "억" in raw:
+        head, _, tail = raw.partition("억")
+        total = int(head or 0) * 10000
+        tail = tail.replace("만", "")
+        if tail.isdigit():
+            total += int(tail)
+        return total
+    raw = raw.replace("만", "")
+    return int(raw) if raw.isdigit() else None
+
+def parse_price(text):
+    compact = text.replace(",", "").replace(" ", "")
+    kind = "전세" if "전세" in compact else ("월세" if "월세" in compact else "")
+    if not kind:
+        return None
+    if kind == "전세":
+        match = re.search(r"전세(?:보증금)?([0-9억만]+)", compact)
+        if not match:
+            return None
+        deposit = amount_manwon(match.group(1))
+        return (kind, deposit, 0) if deposit is not None else None
+    match = re.search(r"(?:보증금)?([0-9억만]+)(?:원)?[/·](?:월세)?([0-9억만]+)", compact)
+    if not match:
+        match = re.search(r"월세([0-9억만]+)/([0-9억만]+)", compact)
+    if not match:
+        return None
+    deposit, monthly = amount_manwon(match.group(1)), amount_manwon(match.group(2))
+    return (kind, deposit, monthly) if deposit is not None and monthly is not None else None
+
+def region_from(text):
+    sido = next((name for name in REGIONS if name in text), "")
+    if not sido:
+        return "", "", ""
+    parts = re.split(r"[\\s,·|]+", text.split(sido, 1)[1].strip())
+    sigungu = parts[0] if parts and re.search(r"(구|시|군)$", parts[0]) else ""
+    dong = next((p for p in parts[1:] if re.search(r"(동|읍|면|리)$", p)), "")
+    return sido, sigungu, dong
+
 def main():
-    response=requests.get(START_URL,headers=HEADERS,timeout=25)
-    print("HTTP",response.status_code,"URL",response.url)
-    response.raise_for_status()
-    if "text/html" not in response.headers.get("Content-Type",""):
-        raise RuntimeError("HTML이 아닌 응답입니다. API로 대체하지 않고 중단합니다.")
-    soup=BeautifulSoup(response.content,"html.parser")
-    page_text=clean(soup.get_text(" ",strip=True))
-    if not any(x in page_text for x in ("매물","전세","월세")):
-        raise RuntimeError("받은 HTML에서 매물 텍스트를 찾지 못했습니다.")
-    records=[]; seen=set()
-    for a in soup.select("a[href]"):
-        title=clean(a.get_text(" ",strip=True))
-        if not title or not any(x in title for x in ("전세","월세")): continue
-        if not any(x in title for x in ("원룸","투룸","빌라","다세대","연립")): continue
-        typ="전세" if "전세" in title else "월세"
-        m=re.search(r"(?:전세|월세)\\s*([0-9,억만]+)(?:\\s*/\\s*([0-9,]+))?",title)
-        if not m: continue
-        dep=money(m.group(1)); mon=money(m.group(2) or "0") if typ=="월세" else 0
-        if dep is None: continue
-        link=urljoin(response.url,a.get("href",""))
-        if link in seen: continue
-        seen.add(link)
-        dong=re.search(r"서울\\s*중구\\s*([^\\s,]+)",title)
-        kind=next((x for x in ("원룸","투룸","빌라","다세대","연립") if x in title),"")
-        area=re.search(r"([0-9]+(?:\\.[0-9]+)?)\\s*평",title)
-        records.append({"sido":"서울특별시","sigungu":"중구","neighborhood":dong.group(1) if dong else "",
-          "rent_type":typ,"housing_type":kind,"deposit_manwon":dep,"monthly_rent_manwon":mon or 0,
-          "area_m2":round(float(area.group(1))*3.3058,1) if area else None,"building":"공개 매물",
-          "listing_title":title[:240],"listing_url":link,"source_url":response.url,
-          "collected_at":datetime.now().astimezone().isoformat(timespec="seconds")})
-    time.sleep(1)
+    if not SOURCES.exists():
+        SOURCES.write_text("# 공개 HTML 매물 목록 페이지 URL을 한 줄에 하나씩 입력하세요.\n", encoding="utf-8")
+    urls = [line.strip() for line in SOURCES.read_text(encoding="utf-8").splitlines() if line.strip() and not line.lstrip().startswith("#")]
+    if not urls:
+        raise SystemExit("sources.txt에 확인된 공개 HTML 매물 페이지 주소가 없습니다. API나 임의 데이터로 대체하지 않습니다.")
+    records, seen = [], set()
+    for url in urls:
+        if not url.startswith(("https://", "http://")):
+            print("건너뜀: HTTP(S) 주소가 아님:", url)
+            continue
+        try:
+            response = requests.get(url, headers=HEADERS, timeout=20)
+            print("HTTP", response.status_code, response.url)
+            response.raise_for_status()
+            if "text/html" not in response.headers.get("Content-Type", ""):
+                print("건너뜀: HTML이 아닌 응답")
+                continue
+            soup = BeautifulSoup(response.content, "html.parser")
+            for node in soup.select("article, li, .item, .list-item, .room, .property, a[href]"):
+                title = clean(node.get_text(" ", strip=True))
+                if len(title) < 8 or not any(word in title for word in ("전세", "월세")):
+                    continue
+                if not any(word in title for word in ("원룸", "투룸", "빌라", "다세대", "연립", "주택")):
+                    continue
+                parsed = parse_price(title)
+                if not parsed:
+                    continue
+                rent_type, deposit, monthly = parsed
+                link_node = node if node.name == "a" else node.select_one("a[href]")
+                link = urljoin(response.url, link_node.get("href", "")) if link_node else response.url
+                key = (link, title)
+                if key in seen:
+                    continue
+                seen.add(key)
+                sido, sigungu, dong = region_from(title)
+                housing = next((word for word in ("원룸", "투룸", "빌라", "다세대", "연립", "주택") if word in title), "주택")
+                area = re.search(r"([0-9]+(?:\\.[0-9]+)?)\\s*㎡", title)
+                records.append({
+                    "sido": sido, "sigungu": sigungu, "neighborhood": dong,
+                    "rent_type": rent_type, "housing_type": housing,
+                    "deposit_manwon": deposit, "monthly_rent_manwon": monthly,
+                    "area_m2": float(area.group(1)) if area else None,
+                    "building": title[:100], "listing_title": title[:300],
+                    "listing_url": link, "source_url": response.url,
+                    "collected_at": datetime.now().astimezone().isoformat(timespec="seconds")
+                })
+            time.sleep(1)
+        except requests.RequestException as exc:
+            print("요청 실패:", url, str(exc)[:160])
     if not records:
-        raise RuntimeError("HTML 요청은 됐지만 매물 카드 구조를 추출하지 못했습니다. 가짜 데이터나 API로 대체하지 않았습니다.")
-    OUTPUT.parent.mkdir(parents=True,exist_ok=True)
-    doc={"source":"자리톡 공개 지역별 매물 페이지","source_url":START_URL,
-      "collection_method":"requests + BeautifulSoup HTML 크롤링 (API 미사용)",
-      "updated_at":datetime.now().astimezone().date().isoformat(),"count":len(records),
-      "records":records,"note":"공개 HTML에 노출된 정보만 수집합니다. 게시일이 노출되지 않으면 최신 등록일은 보장할 수 없습니다."}
-    OUTPUT.write_text(json.dumps(doc,ensure_ascii=False,indent=2),encoding="utf-8")
-    print("수집 완료:",len(records),"건")
-if __name__=="__main__": main()
+        raise SystemExit("실제 매물 HTML을 추출하지 못했습니다. data.json은 덮어쓰지 않았습니다.")
+    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+    document = {
+        "source": "sources.txt에 지정한 공개 HTML 페이지", "source_urls": urls,
+        "collection_method": "requests + BeautifulSoup HTML 파싱 (API 미사용)",
+        "updated_at": datetime.now().astimezone().date().isoformat(),
+        "count": len(records), "records": records,
+        "note": "공개 HTML에서 확인된 항목만 저장합니다. 등록일이 없으면 최신성을 보장하지 않습니다."
+    }
+    OUTPUT.write_text(json.dumps(document, ensure_ascii=False, indent=2), encoding="utf-8")
+    print("수집 완료:", len(records), "건")
+
+if __name__ == "__main__":
+    main()
