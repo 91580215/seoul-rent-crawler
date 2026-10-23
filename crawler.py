@@ -16,7 +16,7 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chr
 REGIONS = ["서울특별시","부산광역시","대구광역시","인천광역시","광주광역시","대전광역시","울산광역시","세종특별자치시","경기도","강원특별자치도","충청북도","충청남도","전북특별자치도","전라남도","경상북도","경상남도","제주특별자치도"]
 
 def clean(value):
-    return re.sub(r"\\s+", " ", str(value or "")).strip()
+    return re.sub(r"\s+", " ", str(value or "")).strip()
 
 def money_to_manwon(value):
     if value is None: return None
@@ -45,12 +45,12 @@ def parse_price(text, item=None):
     compact = clean(text).replace(",", "").replace(" ", "")
     if "전세" in deal or "전세" in compact or "JEONSE" in deal.upper():
         if deposit is None:
-            m = re.search(r"전세(?:보증금)?(\\d+억?\\d*만?)", compact)
+            m = re.search(r"전세(?:보증금)?(\d+억?\d*만?)", compact)
             deposit = money_to_manwon(m.group(1)) if m else None
         return ("전세", deposit, 0) if deposit is not None else None
     if "월세" in deal or "월세" in compact or "MONTHLY" in deal.upper():
         if deposit is None or monthly is None:
-            m = re.search(r"(?:월세)?(\\d+억?\\d*만?)[/·](\\d+만?)", compact)
+            m = re.search(r"(?:월세)?(\d+억?\d*만?)[/·](\d+만?)", compact)
             if m:
                 deposit = deposit if deposit is not None else money_to_manwon(m.group(1))
                 monthly = monthly if monthly is not None else money_to_manwon(m.group(2))
@@ -111,7 +111,7 @@ def normalize_item(item, page_url, text=""):
     typ, deposit, monthly = parsed
     region_text = " ".join([clean(item.get("address")), clean(item.get("region")), title, text])
     sido = next((r for r in REGIONS if r in region_text), "")
-    parts = re.split(r"[\\s,·|]+", region_text)
+    parts = re.split(r"[\s,·|]+", region_text)
     sigungu = next((p for p in parts if p.endswith(("구","시","군"))), "")
     dong = next((p for p in parts if p.endswith(("동","읍","면","리"))), "")
     housing = next((k for k in ("원룸","투룸","빌라","다세대","연립","주택") if k in alltext), "주택")
@@ -120,7 +120,7 @@ def normalize_item(item, page_url, text=""):
     link = urljoin(page_url, str(link)) if link else page_url
     area = item.get("area") or item.get("areaM2") or item.get("exclusiveArea")
     if isinstance(area, dict): area = area.get("value") or area.get("m2")
-    try: area = float(re.search(r"\\d+(?:\\.\\d+)?", str(area)).group()) if area is not None and re.search(r"\\d+(?:\\.\\d+)?", str(area)) else None
+    try: area = float(re.search(r"\d+(?:\.\d+)?", str(area)).group()) if area is not None and re.search(r"\d+(?:\.\d+)?", str(area)) else None
     except (ValueError, AttributeError): area = None
     return {
         "sido": sido, "sigungu": sigungu, "neighborhood": dong,
