@@ -1,5 +1,8 @@
 name: Collect public rental listing HTML
 on:
+  push:
+    paths-ignore:
+      - 'docs/data.json'
   workflow_dispatch:
   schedule:
     - cron: "17 */6 * * *"
