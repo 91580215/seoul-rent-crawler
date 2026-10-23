@@ -31,7 +31,7 @@ main{padding:24px 0 50px}.stats{display:grid;grid-template-columns:repeat(auto-f
     <h2 style="margin:0">거래 검색</h2>
     <div class="controls">
       <input id="search" placeholder="구·동·건물명 검색"><button id="searchBtn" type="button" style="display:inline-block;background:#173b68;color:#fff;padding:10px 22px;border:0;border-radius:9px;font-weight:700;cursor:pointer">검색</button>
-      <select id="district">
+      <select id="district" aria-label="자치구 선택" style="min-width:145px;display:inline-block">
         <option value="">모든 자치구</option>
         <option>강남구</option><option>강동구</option><option>강북구</option><option>강서구</option><option>관악구</option>
         <option>광진구</option><option>구로구</option><option>금천구</option><option>노원구</option><option>도봉구</option>
@@ -67,13 +67,13 @@ function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&l
 ['search','district','kind','sort'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',render));
 $('searchBtn').addEventListener('click',render);
 $('search').addEventListener('keydown',event=>{if(event.key==='Enter')render()});
-fetch('./data.json').then(r=>{if(!r.ok)throw Error('data.json 파일이 아직 없어요.');return r.json()}).then(data=>{
+fetch('./data.json?v=20261023b').then(r=>{if(!r.ok)throw Error('data.json 파일이 아직 없어요.');return r.json()}).then(data=>{
  all=data.records||[];$('total').textContent=all.length.toLocaleString()+'건';
  $('jeonse').textContent=all.filter(r=>String(r.rent_type).includes('전세')).length.toLocaleString()+'건';
  $('monthly').textContent=all.filter(r=>String(r.rent_type).includes('월세')).length.toLocaleString()+'건';
  $('updated').textContent=data.updated_at||'-';
- [...new Set(all.map(r=>r.district).filter(Boolean))].sort().forEach(name=>{const o=document.createElement('option');o.value=name;o.textContent=name;$('district').appendChild(o)});
- $('status').textContent='자료 기간: '+data.period_from+' ~ '+data.period_to;render();
+ 
+ $('status').textContent=all.length ? ('자료 기간: '+data.period_from+' ~ '+data.period_to) : ('자료 파일은 연결됐지만 '+data.period_from+' ~ '+data.period_to+' 기간의 계약이 0건이에요. 최근 신고 자료가 아직 공개되지 않았을 수 있어요.');render();
 }).catch(err=>{$('total').textContent='자료 준비 중';$('status').textContent='데이터 파일이 아직 생성되지 않았어요. '+err.message;$('foot').textContent='저장소에 SEOUL_API_KEY를 등록하고 데이터 수집 작업을 실행하면 자료가 표시됩니다.'});
 </script>
 </body></html>
