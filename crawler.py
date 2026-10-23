@@ -63,7 +63,7 @@ def first_value(row: dict, *keys: str) -> str:
 
 def main() -> None:
     today = date.today()
-    cutoff = today - timedelta(days=6)  # 오늘 포함 최근 7일
+    cutoff = today - timedelta(days=29)  # 오늘 포함 최근 30일
     collected: list[dict] = []
 
     current = cutoff
@@ -104,6 +104,7 @@ def main() -> None:
         "source": "서울특별시 서울 열린데이터광장 OA-21276 (tbLnOpendataRentV)",
         "source_url": "https://data.seoul.go.kr/dataList/OA-21276/S/1/datasetView.do",
         "updated_at": today.isoformat(),
+        "period_days": 30,
         "period_from": cutoff.isoformat(),
         "period_to": today.isoformat(),
         "count": len(collected),
