@@ -6,6 +6,7 @@ import csv
 import json
 import os
 import time
+from urllib.parse import quote
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -31,15 +32,20 @@ def get_rows(year: int) -> list[dict]:
     start = 1
     while True:
         end = start + PAGE_SIZE - 1
-        url = f"{BASE_URL}/{API_KEY}/json/tbLnOpendataRentV/{start}/{end}"
-        response = requests.get(
-            url,
-            params={"RCPT_YR": str(year), "BLDG_USG": TARGET_USAGE},
-            headers=HEADERS,
-            timeout=40,
-        )
-        response.raise_for_status()
-        payload = response.json()
+        # Seoul Open API filters belong in the URL path, not query parameters.
+        year_filter = quote(f"RCPT_YR={year}", safe="=")
+        usage_filter = quote(f"BLDG_USG={TARGET_USAGE}", safe="=")
+        url = f"{BASE_URL}/{API_KEY}/json/tbLnOpendataRentV/{start}/{end}/{year_filter}/{usage_filter}"
+        try:
+            response = requests.get(url, headers=HEADERS, timeout=(10, 60))
+            response.raise_for_status()
+            payload = response.json()
+        except (requests.Timeout, requests.ConnectionError) as exc:
+            print(f"{year}년 {start}~{end}번 요청 일시 실패: {exc}. 3초 후 재시도합니다.")
+            time.sleep(3)
+            response = requests.get(url, headers=HEADERS, timeout=(10, 60))
+            response.raise_for_status()
+            payload = response.json()
         block = payload.get("tbLnOpendataRentV", {})
         result = block.get("RESULT", {})
         if result and result.get("CODE") != "INFO-000":
