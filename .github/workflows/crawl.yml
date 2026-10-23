@@ -1,0 +1,34 @@
+name: Collect public rental listing HTML
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 */6 * * *"
+permissions:
+  contents: write
+concurrency:
+  group: public-listing-html-crawl
+  cancel-in-progress: false
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install crawler dependencies
+        run: python -m pip install requests beautifulsoup4
+      - name: Crawl configured public HTML pages
+        run: python crawler.py
+      - name: Commit refreshed listing data
+        run: |
+          if git diff --quiet -- docs/data.json; then
+            echo "No listing data changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data.json
+          git commit -m "Refresh public HTML rental listings"
+          git push
