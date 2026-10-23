@@ -1,9 +1,9 @@
 {
-  "source": "자리톡 공개 지역별 매물 페이지",
-  "source_url": "https://vacancy.zaritalk.com/region/%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C-%EC%A4%91%EA%B5%AC",
-  "collection_method": "requests + BeautifulSoup HTML 크롤링 예정; API 미사용",
+  "source": "공개 HTML 매물 페이지 미연결",
+  "source_urls": [],
+  "collection_method": "requests + BeautifulSoup HTML 크롤링 프로젝트",
   "updated_at": null,
   "count": 0,
   "records": [],
-  "note": "crawler.py가 공개 HTML에서 실제 매물을 추출해 실행 성공했을 때 갱신됩니다. 확인되지 않은 예시 매물은 실제 데이터로 표시하지 않습니다."
+  "note": "확인되지 않은 매물은 넣지 않았습니다. 자리톡은 사용하지 않습니다. 공개 HTML 매물 페이지가 연결되기 전까지 결과는 0건입니다."
 }
