@@ -24,7 +24,7 @@ def money_to_manwon(value):
         return round(value / 10000) if value > 100000 else int(value)
     s = clean(value).replace(",", "").replace(" ", "")
     if not s: return None
-    m = re.search(r"(?:(\\d+)억)?(?:(\\d+)만)?", s)
+    m = re.search(r"(?:(\d+)억)?(?:(\d+)만)?", s)
     if m and (m.group(1) or m.group(2)):
         return int(m.group(1) or 0) * 10000 + int(m.group(2) or 0)
     digits = re.sub(r"[^0-9]", "", s)
@@ -85,7 +85,7 @@ def embedded_json_candidates(html):
                     c = raw[i]
                     if quoted:
                         if escaped: escaped = False
-                        elif c == "\\\\": escaped = True
+                        elif c == "\\": escaped = True
                         elif c == '"': quoted = False
                     else:
                         if c == '"': quoted = True
