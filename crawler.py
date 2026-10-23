@@ -20,32 +20,25 @@ TARGET_USAGE = "연립다세대"
 HEADERS = {"User-Agent": "SeoulRentScout/1.0 (student data project)"}
 
 
-def get_rows(year: int) -> list[dict]:
-    """연도별로 API 페이지를 순회해 연립·다세대 전월세 데이터를 수집한다."""
+def get_rows(contract_date: date) -> list[dict]:
+    """계약일 하루치의 연립·다세대 전월세 데이터를 API에서 가져온다."""
     if not API_KEY:
         raise RuntimeError(
-            "SEOUL_API_KEY가 설정되지 않았어요. 서울 열린데이터광장에서 무료 인증키를 발급한 뒤 "
+            "SEOUL_API_KEY가 설정되지 않았어요. 서울 열린데이터광장에서 인증키를 발급한 뒤 "
             "GitHub 저장소 Settings > Secrets and variables > Actions에 등록해 주세요."
         )
 
     rows: list[dict] = []
     start = 1
-    while True:
+    total = None
+    while total is None or start <= total:
         end = start + PAGE_SIZE - 1
-        # Seoul Open API filters belong in the URL path, not query parameters.
-        year_filter = quote(f"RCPT_YR={year}", safe="=")
+        date_filter = quote(f"CTRT_DAY={contract_date.strftime('%Y%m%d')}", safe="=")
         usage_filter = quote(f"BLDG_USG={TARGET_USAGE}", safe="=")
-        url = f"{BASE_URL}/{API_KEY}/json/tbLnOpendataRentV/{start}/{end}/{year_filter}/{usage_filter}"
-        try:
-            response = requests.get(url, headers=HEADERS, timeout=(10, 60))
-            response.raise_for_status()
-            payload = response.json()
-        except (requests.Timeout, requests.ConnectionError) as exc:
-            print(f"{year}년 {start}~{end}번 요청 일시 실패: {exc}. 3초 후 재시도합니다.")
-            time.sleep(3)
-            response = requests.get(url, headers=HEADERS, timeout=(10, 60))
-            response.raise_for_status()
-            payload = response.json()
+        url = f"{BASE_URL}/{API_KEY}/json/tbLnOpendataRentV/{start}/{end}/{date_filter}/{usage_filter}"
+        response = requests.get(url, headers=HEADERS, timeout=(10, 45))
+        response.raise_for_status()
+        payload = response.json()
         block = payload.get("tbLnOpendataRentV", {})
         result = block.get("RESULT", {})
         if result and result.get("CODE") != "INFO-000":
@@ -55,13 +48,10 @@ def get_rows(year: int) -> list[dict]:
             break
         rows.extend(page_rows)
         total = int(block.get("list_total_count", len(rows)))
-        print(f"{year}년: {len(rows):,} / {total:,}건 확인")
-        if start + PAGE_SIZE > total:
-            break
+        print(f"{contract_date}: {len(rows):,} / {total:,}건 확인")
         start += PAGE_SIZE
-        time.sleep(0.15)
+        time.sleep(0.1)
     return rows
-
 
 def first_value(row: dict, *keys: str) -> str:
     for key in keys:
@@ -73,12 +63,12 @@ def first_value(row: dict, *keys: str) -> str:
 
 def main() -> None:
     today = date.today()
-    cutoff = today - timedelta(days=365)
-    years = sorted({cutoff.year, today.year})
+    cutoff = today - timedelta(days=6)  # 오늘 포함 최근 7일
     collected: list[dict] = []
 
-    for year in years:
-        for row in get_rows(year):
+    current = cutoff
+    while current <= today:
+        for row in get_rows(current):
             contract_day = first_value(row, "CTRT_DAY", "계약일")
             if len(contract_day) != 8 or not contract_day.isdigit():
                 continue
