@@ -53,6 +53,26 @@ def get_rows(contract_date: date) -> list[dict]:
         time.sleep(0.1)
     return rows
 
+def diagnose_api() -> None:
+    """수집 전에 기본 조회와 필터 조회가 각각 작동하는지 확인한다."""
+    probes = [
+        ("기본 조회", f"{BASE_URL}/{API_KEY}/json/tbLnOpendataRentV/1/5/"),
+        ("용도 필터", f"{BASE_URL}/{API_KEY}/json/tbLnOpendataRentV/1/5/{quote('BLDG_USG=연립다세대', safe='=')}"),
+        ("계약일 필터", f"{BASE_URL}/{API_KEY}/json/tbLnOpendataRentV/1/5/{quote('CTRT_DAY='+date.today().strftime('%Y%m%d'), safe='=')}"),
+    ]
+    for label, url in probes:
+        response = requests.get(url, headers=HEADERS, timeout=(10, 45))
+        print(f"진단 {label}: HTTP {response.status_code}")
+        response.raise_for_status()
+        payload = response.json()
+        block = payload.get("tbLnOpendataRentV", {})
+        result = block.get("RESULT", {})
+        print(f"진단 {label}: CODE={result.get('CODE')} MESSAGE={result.get('MESSAGE')} total={block.get('list_total_count')} rows={len(block.get('row', []))}")
+        if label == "기본 조회" and block.get("row"):
+            sample = block["row"][0]
+            print("진단 기본 조회 필드:", ", ".join(sample.keys()))
+            print("진단 첫 행 주요값:", {k: sample.get(k) for k in ("CTRT_DAY", "BLDG_USG", "RENT_SE", "CGG_NM", "STDG_NM")})
+
 def first_value(row: dict, *keys: str) -> str:
     for key in keys:
         value = row.get(key)
@@ -62,6 +82,7 @@ def first_value(row: dict, *keys: str) -> str:
 
 
 def main() -> None:
+    diagnose_api()
     today = date.today()
     cutoff = today - timedelta(days=29)  # 오늘 포함 최근 30일
     collected: list[dict] = []
