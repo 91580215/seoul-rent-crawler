@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>전월세 매물 탐험대</title>
+<title>전국 대학가 자취방 추천 진단기</title>
 <style>
 :root{font-family:system-ui,-apple-system,"Malgun Gothic",sans-serif;color:#172033;background:#f4f7fb}
 *{box-sizing:border-box}body{margin:0}header{background:linear-gradient(120deg,#173b68,#286b83);color:white;padding:30px 18px}.wrap{max-width:1100px;margin:auto;padding:0 18px}
@@ -27,14 +27,14 @@ button{font:inherit;padding:11px 18px;border:0;border-radius:9px;background:#173
  <div class="card"><div class="label">자료 갱신일</div><div class="number" id="updated" style="font-size:18px">-</div></div>
 </div>
 <section class="panel">
-<h2 style="margin:0 0 14px;font-size:19px">대학교 중심 자취방 추천</h2>
+<h2 style="margin:0 0 14px;font-size:19px">전국 대학교 주변 자취방 추천</h2>
 <div class="filters">
  <div style="display:none"><label for="sido">시·도</label><select id="sido"><option value="">전체 시·도</option></select></div>
  <div style="display:none"><label for="sigungu">시·군·구</label><select id="sigungu" disabled><option value="">먼저 시·도를 선택하세요</option></select></div>
  <div style="display:none"><label for="dong">읍·면·동</label><select id="dong" disabled><option value="">먼저 시·군·구를 선택하세요</option></select></div>
  <div><label for="kind">계약 유형</label><select id="kind"><option value="">전세 + 월세</option><option value="전세">전세</option><option value="월세">월세</option></select></div>
  <div><label for="housing">주택 유형</label><select id="housing"><option value="">전체 주택 유형</option><option value="원룸">원룸·투룸</option><option value="빌라">빌라·다세대·연립</option></select></div>
- <div><label for="university">기준 대학교</label><select id="university"><option value="all">전체 대학교 기준</option><option value="건국대학교">건국대학교</option><option value="고려대학교">고려대학교</option><option value="서울대학교">서울대학교</option><option value="연세대학교">연세대학교</option><option value="한양대학교">한양대학교</option><option value="홍익대학교">홍익대학교</option></select></div>
+ <div><label for="university">대학교 선택</label><select id="university"><option value="all">대학교 선택</option><option value="가천대학교">가천대학교</option><option value="강원대학교">강원대학교</option><option value="건국대학교">건국대학교</option><option value="경북대학교">경북대학교</option><option value="경상국립대학교">경상국립대학교</option><option value="경희대학교">경희대학교</option><option value="고려대학교">고려대학교</option><option value="광운대학교">광운대학교</option><option value="국민대학교">국민대학교</option><option value="단국대학교">단국대학교</option><option value="동국대학교">동국대학교</option><option value="부산대학교">부산대학교</option><option value="서강대학교">서강대학교</option><option value="서울과학기술대학교">서울과학기술대학교</option><option value="서울대학교">서울대학교</option><option value="서울시립대학교">서울시립대학교</option><option value="성균관대학교">성균관대학교</option><option value="세종대학교">세종대학교</option><option value="숙명여자대학교">숙명여자대학교</option><option value="숭실대학교">숭실대학교</option><option value="아주대학교">아주대학교</option><option value="연세대학교">연세대학교</option><option value="영남대학교">영남대학교</option><option value="울산대학교">울산대학교</option><option value="이화여자대학교">이화여자대학교</option><option value="인하대학교">인하대학교</option><option value="전남대학교">전남대학교</option><option value="전북대학교">전북대학교</option><option value="중앙대학교">중앙대학교</option><option value="충남대학교">충남대학교</option><option value="충북대학교">충북대학교</option><option value="포항공과대학교">포항공과대학교</option><option value="한국외국어대학교">한국외국어대학교</option><option value="한국항공대학교">한국항공대학교</option><option value="한양대학교">한양대학교</option><option value="홍익대학교">홍익대학교</option></select></div>
  <div><label for="sort">정렬 기준</label><select id="sort"><option value="best">추천순</option><option value="new">최근 계약순</option><option value="deposit">보증금 높은 순</option><option value="area">면적 넓은 순</option></select></div>
  <div><button id="search" type="button">매물 검색</button></div>
 </div>
