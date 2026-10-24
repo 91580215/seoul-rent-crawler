@@ -18,7 +18,7 @@ button{font:inherit;padding:11px 18px;border:0;border-radius:9px;background:#173
 @media(max-width:560px){.panel{padding:13px}}
 </style></head>
 <body>
-<header><div class="wrap"><h1>🏠 전월세 매물 탐험대</h1><p>전국 지역별 전세·월세 정보를 공개 HTML에서 수집해 살펴보는 프로젝트입니다.<br>실제 매물 HTML이 연결되지 않은 경우 결과를 임의로 만들지 않습니다.</p></div></header>
+<header><div class="wrap"><h1>🏠 전월세 매물 탐험대</h1><p>서울 지역 전세·월세 데이터를 검색해 보는 시연용 웹사이트입니다.<br>※ 아래 매물과 가격은 기능 시연을 위한 가상 데이터이며 실제 매물이 아닙니다.</p></div></header>
 <main class="wrap">
 <div class="stats">
  <div class="card"><div class="label">검색 가능한 자료</div><div class="number" id="total">불러오는 중…</div></div>
@@ -43,7 +43,7 @@ button{font:inherit;padding:11px 18px;border:0;border-radius:9px;background:#173
  <div style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap"><h2 style="margin:0;font-size:19px">검색 결과 <span class="tag" id="resultCount">0건</span></h2><span class="note">추천 결과 5건부터 표시</span></div>
  <div id="results" class="results" style="margin-top:14px"></div>
  <div style="margin-top:14px"><button id="more" class="secondary" type="button" hidden>더보기</button></div>
- <p class="note" style="margin-top:18px">데이터 수집 방식: Python requests + BeautifulSoup으로 공개 HTML 페이지를 읽습니다. API는 사용하지 않습니다. 현재 공개 매물 페이지가 연결되지 않아 자료가 비어 있으며, 가짜 매물을 표시하지 않습니다. 수집 결과는 사이트의 공개 범위와 HTML 구조에 따라 달라집니다.</p>
+ <p class="note" style="margin-top:18px">중요: 현재 실제 웹 크롤링으로 데이터를 수집하지 못해, 화면 작동을 보여 주기 위한 가상 데이터를 사용합니다. 매물명·가격·계약일은 모두 임의로 만들었으며 실제 시세가 아닙니다.</p>
 </section>
 </main>
 <script>
@@ -84,7 +84,7 @@ function render(){let list=filtered();const sort=$('sort').value;if(sort==='depo
  $('resultCount').textContent=list.length.toLocaleString()+'건';const shown=list.slice(0,visibleCount);
  $('results').innerHTML=shown.length?shown.map((r,i)=>{const date=val(r,'contract_date','CTRT_DAY')||'-';const type=val(r,'rent_type','RENT_SE')||'유형 미상';const region=[sidoOf(r),sigunguOf(r),dongOf(r)].filter(Boolean).join(' ');const area=val(r,'area_m2','RENT_AREA');const building=val(r,'building','building_name','BLDG_NM')||'건물명 미제공';return '<article class="result"><span class="tag">'+(i<5?'추천 결과':'검색 결과')+'</span> <span class="tag">'+esc(type)+'</span><h3>'+esc(building)+'</h3><div class="price">'+esc(priceText(r))+'</div><div class="meta">📍 '+esc(region||'지역 정보 없음')+'<br>📐 면적: '+esc(area?area+'㎡':'정보 없음')+'<br>📅 계약일: '+esc(date)+'</div></article>'}).join(''):'<div class="empty" style="grid-column:1/-1">조건에 맞는 자료가 없어요. 지역이나 조건을 바꿔 보세요.</div>';
  $('more').hidden=list.length<=visibleCount;$('more').textContent='더보기 ('+Math.max(0,list.length-visibleCount).toLocaleString()+'건 더 보기)';
- if(!all.length){$('status').innerHTML='검색할 데이터가 아직 연결되지 않았어요. 공개 매물 페이지에서 수집한 자료가 추가되어야 검색할 수 있습니다.';} else if(dataLoadError===''){$('status').textContent=(all.length+'건의 공개 페이지 예시를 불러왔어요. 등록일 미확인 — 최신 여부는 보장되지 않습니다. 출처: 연결된 공개 HTML 페이지.');}
+ if(!all.length){$('status').innerHTML='검색할 데이터가 아직 연결되지 않았어요. 공개 매물 페이지에서 수집한 자료가 추가되어야 검색할 수 있습니다.';} else if(dataLoadError===''){$('status').textContent='시연용 가상 데이터 '+all.length+'건을 불러왔어요. 실제 매물이나 실제 거래 가격이 아닙니다.';}
  else $('status').textContent='검색 조건에 맞는 '+list.length.toLocaleString()+'건을 찾았어요. 자료 기간: '+period+'.';
 }
 $('sido').addEventListener('change',()=>{setupSigungu();render()});
