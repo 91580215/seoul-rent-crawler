@@ -27,14 +27,14 @@ button{font:inherit;padding:11px 18px;border:0;border-radius:9px;background:#173
  <div class="card"><div class="label">자료 갱신일</div><div class="number" id="updated" style="font-size:18px">-</div></div>
 </div>
 <section class="panel">
-<h2 style="margin:0 0 14px;font-size:19px">지역 및 조건 선택</h2>
+<h2 style="margin:0 0 14px;font-size:19px">대학교 중심 자취방 추천</h2>
 <div class="filters">
- <div><label for="sido">시·도</label><select id="sido"><option value="">전체 시·도</option></select></div>
- <div><label for="sigungu">시·군·구</label><select id="sigungu" disabled><option value="">먼저 시·도를 선택하세요</option></select></div>
- <div><label for="dong">읍·면·동</label><select id="dong" disabled><option value="">먼저 시·군·구를 선택하세요</option></select></div>
+ <div style="display:none"><label for="sido">시·도</label><select id="sido"><option value="">전체 시·도</option></select></div>
+ <div style="display:none"><label for="sigungu">시·군·구</label><select id="sigungu" disabled><option value="">먼저 시·도를 선택하세요</option></select></div>
+ <div style="display:none"><label for="dong">읍·면·동</label><select id="dong" disabled><option value="">먼저 시·군·구를 선택하세요</option></select></div>
  <div><label for="kind">계약 유형</label><select id="kind"><option value="">전세 + 월세</option><option value="전세">전세</option><option value="월세">월세</option></select></div>
  <div><label for="housing">주택 유형</label><select id="housing"><option value="">전체 주택 유형</option><option value="원룸">원룸·투룸</option><option value="빌라">빌라·다세대·연립</option></select></div>
- <div><label for="university">기준 대학교</label><select id="university"><option value="all">대학교 기준 선택</option><option value="건국대학교">건국대학교</option><option value="고려대학교">고려대학교</option><option value="서울대학교">서울대학교</option><option value="연세대학교">연세대학교</option><option value="한양대학교">한양대학교</option><option value="홍익대학교">홍익대학교</option></select></div>
+ <div><label for="university">기준 대학교</label><select id="university"><option value="all">전체 대학교 기준</option><option value="건국대학교">건국대학교</option><option value="고려대학교">고려대학교</option><option value="서울대학교">서울대학교</option><option value="연세대학교">연세대학교</option><option value="한양대학교">한양대학교</option><option value="홍익대학교">홍익대학교</option></select></div>
  <div><label for="sort">정렬 기준</label><select id="sort"><option value="best">추천순</option><option value="new">최근 계약순</option><option value="deposit">보증금 높은 순</option><option value="area">면적 넓은 순</option></select></div>
  <div><button id="search" type="button">매물 검색</button></div>
 </div>
